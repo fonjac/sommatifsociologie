@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Institutions Sociales — Sports du Canada</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Kleptocracy&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --red: #D52B1E;
+  --red-bright: #FF1A0E;
+  --red-dark: #8B0000;
+  --red-glow: rgba(213,43,30,0.5);
+  --white: #F5F0E8;
+  --offwhite: #e8dfd0;
+  --bg: #06060A;
+  --bg2: #0d0d14;
+  --bg3: #111118;
+  --border: rgba(213,43,30,0.25);
+  --border-white: rgba(245,240,232,0.12);
+  --text: #e8dfd0;
+  --text-dim: rgba(232,223,208,0.55);
+  --gold: #C8973E;
+  --glow-red: 0 0 30px rgba(213,43,30,0.6), 0 0 60px rgba(213,43,30,0.3);
+  --glow-white: 0 0 20px rgba(245,240,232,0.4);
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:'Crimson Pro',Georgia,serif;
+  font-weight:300;overflow-x:hidden;cursor:none;
+}
+
+/* ── CURSOR ── */
+#cur{position:fixed;width:10px;height:10px;background:var(--red);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .2s,height .2s,background .2s;mix-blend-mode:screen}
+#cur-r{position:fixed;width:40px;height:40px;border:1px solid var(--red);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .3s,height .3s;opacity:.5}
+body:has(a:hover) #cur,body:has(button:hover) #cur{width:18px;height:18px;background:#fff}
+body:has(a:hover) #cur-r,body:has(button:hover) #cur-r{width:60px;height:60px;opacity:.3}
+
+/* ── CANVAS LAYERS ── */
+#aurora-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;opacity:.55}
+#leaf-canvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1;pointer-events:none}
+
+/* ── SCANLINES ── */
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.06) 3px,rgba(0,0,0,0.06) 4px);pointer-events:none;z-index:2}
+
+/* ── NAV ── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  padding:18px 60px;display:flex;align-items:center;justify-content:space-between;
+  background:rgba(6,6,10,0.88);backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border);
+  animation:slideNavDown .9s cubic-bezier(.16,1,.3,1) forwards;
+}
+@keyframes slideNavDown{from{transform:translateY(-100%);opacity:0}to{transform:translateY(0);opacity:1}}
+.nav-brand{font-family:'Kleptocracy',serif;font-size:1.05rem;letter-spacing:.12em;color:var(--red);display:flex;align-items:center;gap:14px}
+.nav-brand .maple-icon{width:22px;height:22px;fill:var(--red);filter:drop-shadow(var(--glow-red))}
+.nav-links{display:flex;gap:36px;list-style:none}
+.nav-links a{font-family:'Kleptocracy',serif;font-size:.72rem;letter-spacing:.18em;text-decoration:none;color:var(--text-dim);text-transform:uppercase;position:relative;transition:color .3s}
+.nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:1px;background:var(--red);transition:width .35s ease;box-shadow:var(--glow-red)}
+.nav-links a:hover{color:var(--white)}
+.nav-links a:hover::after{width:100%}
+.nav-flag{display:flex;align-items:center;gap:0}
+.nav-flag .f1,.nav-flag .f3{width:12px;height:24px;background:var(--red)}
+.nav-flag .f2{width:24px;height:24px;background:var(--white);display:flex;align-items:center;justify-content:center}
+.nav-flag .f2 svg{width:14px;height:14px;fill:var(--red)}
+
+/* ── HERO ── */
+#hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:130px 60px 80px;position:relative;overflow:hidden;z-index:3}
+.hero-kicker{
+  font-family:'Kleptocracy',serif;font-size:.7rem;letter-spacing:.55em;color:var(--red);
+  text-transform:uppercase;margin-bottom:28px;
+  opacity:0;animation:riseIn .8s .4s ease forwards;
+  display:flex;align-items:center;gap:16px;
+}
+.hero-kicker::before{content:'';width:50px;height:1px;background:var(--red);box-shadow:var(--glow-red)}
+.hero-h1{
+  font-family:'Kleptocracy',serif;
+  font-size:clamp(4rem,9vw,10.5rem);
+  line-height:.88;text-transform:uppercase;
+  color:var(--white);
+  opacity:0;animation:riseIn .9s .6s ease forwards;
+}
+.hero-h1 .canada{color:var(--red);text-shadow:var(--glow-red);display:block}
+.hero-h1 .sport{display:block;-webkit-text-stroke:1px rgba(245,240,232,.3);color:transparent}
+.hero-h1 .institutions{display:block}
+
+.hero-divider{
+  width:120px;height:2px;background:linear-gradient(90deg,var(--red),transparent);
+  margin:36px 0;opacity:0;animation:riseIn .8s .8s ease forwards;
+  box-shadow:var(--glow-red);
+}
+.hero-sub{
+  font-size:1.15rem;font-style:italic;color:var(--text-dim);max-width:600px;line-height:1.85;
+  opacity:0;animation:riseIn .8s 1s ease forwards;
+}
+.hero-tags{
+  display:flex;gap:16px;margin-top:48px;flex-wrap:wrap;
+  opacity:0;animation:riseIn .8s 1.2s ease forwards;
+}
+.htag{
+  padding:10px 24px;border:1px solid var(--border);
+  font-family:'Kleptocracy',serif;font-size:.65rem;letter-spacing:.22em;color:var(--red);text-transform:uppercase;
+  position:relative;overflow:hidden;transition:color .3s,border-color .3s,box-shadow .3s;cursor:default;
+}
+.htag::before{content:'';position:absolute;inset:0;background:var(--red);transform:scaleX(0);transform-origin:left;transition:transform .4s cubic-bezier(.16,1,.3,1)}
+.htag span{position:relative;z-index:1}
+.htag:hover{color:var(--white);border-color:var(--red);box-shadow:var(--glow-red)}
+.htag:hover::before{transform:scaleX(1)}
+.hero-stats{
+  display:flex;gap:60px;margin-top:64px;
+  opacity:0;animation:riseIn .8s 1.4s ease forwards;
+}
+.hstat .num{font-family:'Kleptocracy',serif;font-size:3.2rem;color:var(--white);line-height:1;transition:.3s}
+.hstat .lbl{font-size:.72rem;letter-spacing:.18em;color:var(--text-dim);text-transform:uppercase;margin-top:6px}
+.hero-scroll-hint{
+  position:absolute;bottom:40px;left:60px;
+  font-family:'Kleptocracy',serif;font-size:.6rem;letter-spacing:.35em;color:var(--text-dim);text-transform:uppercase;
+  display:flex;align-items:center;gap:14px;
+  opacity:0;animation:riseIn .8s 1.6s ease forwards;
+}
+.scroll-line{width:48px;height:1px;background:var(--red);animation:scrollPulse 2s infinite}
+@keyframes scrollPulse{0%,100%{transform:scaleX(1);opacity:1}50%{transform:scaleX(.4);opacity:.4}}
+.hero-maple-bg{
+  position:absolute;right:-80px;top:50%;transform:translateY(-50%);
+  width:600px;height:600px;opacity:.04;
+  animation:slowRotate 60s linear infinite;
+}
+@keyframes slowRotate{from{transform:translateY(-50%) rotate(0)}to{transform:translateY(-50%) rotate(360deg)}}
+
+@keyframes riseIn{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── FLAG DIVIDER ── */
+.flag-strip{
+  height:6px;display:flex;position:relative;z-index:3;
+  background:linear-gradient(90deg, var(--red) 25%, var(--white) 25%, var(--white) 75%, var(--red) 75%);
+  box-shadow:0 0 30px rgba(213,43,30,.4);
+}
+
+/* ── SECTION SHARED ── */
+section{position:relative;z-index:3}
+.s-label{
+  font-family:'Kleptocracy',serif;font-size:.6rem;letter-spacing:.45em;color:var(--red);
+  text-transform:uppercase;display:flex;align-items:center;gap:12px;margin-bottom:20px;
+}
+.s-label::before{content:'';width:28px;height:1px;background:var(--red);box-shadow:var(--glow-red)}
+.s-title{font-family:'Kleptocracy',serif;font-size:clamp(1.8rem,4vw,3.2rem);line-height:1.1;color:var(--white)}
+
+/* ── DEFINITION ── */
+#definition{padding:100px 60px;border-top:1px solid var(--border)}
+.def-wrap{display:grid;grid-template-columns:auto 1fr;gap:80px;align-items:start}
+.def-left{}
+.def-giant{
+  font-family:'Kleptocracy',serif;font-size:11rem;line-height:1;
+  color:transparent;-webkit-text-stroke:1px rgba(213,43,30,.18);
+  user-select:none;margin-top:10px;
+}
+.def-right h2{font-family:'Kleptocracy',serif;font-size:2rem;color:var(--white);margin-bottom:24px;line-height:1.3}
+.def-right p{font-size:1.05rem;line-height:1.95;color:var(--text-dim)}
+.def-right .theme-chip{
+  display:inline-flex;align-items:center;gap:10px;margin-top:28px;
+  padding:10px 22px;border:1px solid var(--border);
+  font-family:'Kleptocracy',serif;font-size:.65rem;letter-spacing:.25em;color:var(--red);text-transform:uppercase;
+}
+.def-right .theme-chip svg{width:14px;fill:var(--red)}
+
+/* ── COUNTER STRIP ── */
+#counters{
+  padding:70px 60px;
+  display:grid;grid-template-columns:repeat(4,1fr);
+  border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  background:linear-gradient(180deg,rgba(213,43,30,.04),transparent);
+}
+.counter-item{
+  padding:20px 40px;border-right:1px solid var(--border);text-align:center;
+  position:relative;overflow:hidden;
+}
+.counter-item:last-child{border-right:none}
+.counter-item::after{
+  content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);
+  width:0;height:2px;background:var(--red);
+  transition:width .6s ease;box-shadow:var(--glow-red);
+}
+.counter-item:hover::after{width:80%}
+.c-num{font-family:'Kleptocracy',serif;font-size:3.8rem;color:var(--white);line-height:1;display:block}
+.c-num .accent{color:var(--red)}
+.c-lbl{font-size:.72rem;letter-spacing:.2em;color:var(--text-dim);text-transform:uppercase;margin-top:8px;display:block}
+
+/* ── INSTITUTIONS ── */
+#institutions{padding:100px 0}
+.inst-head{padding:0 60px 60px;display:flex;justify-content:space-between;align-items:flex-end;border-bottom:1px solid var(--border);margin-bottom:80px}
+.inst-head-n{font-family:'Kleptocracy',serif;font-size:6rem;color:transparent;-webkit-text-stroke:1px rgba(213,43,30,.2)}
+
+/* CARD */
+.icard{
+  margin:0 60px 100px;
+  border:1px solid var(--border);
+  position:relative;overflow:hidden;
+  opacity:0;transform:translateY(50px) scale(.98);
+  transition:opacity .9s cubic-bezier(.16,1,.3,1),transform .9s cubic-bezier(.16,1,.3,1);
+}
+.icard.vis{opacity:1;transform:translateY(0) scale(1)}
+.icard-glow{
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse at 0% 0%,rgba(213,43,30,.1) 0%,transparent 60%);
+  opacity:0;transition:opacity .5s;pointer-events:none;
+}
+.icard:hover .icard-glow{opacity:1}
+/* Red sweep line on hover */
+.icard::before{
+  content:'';position:absolute;top:0;left:-100%;width:100%;height:2px;
+  background:linear-gradient(90deg,transparent,var(--red),transparent);
+  transition:left .8s ease;box-shadow:var(--glow-red);
+}
+.icard:hover::before{left:100%}
+
+.icard-bar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 36px;border-bottom:1px solid var(--border);
+  background:rgba(213,43,30,.04);
+}
+.icard-id{font-family:'Kleptocracy',serif;font-size:.6rem;letter-spacing:.35em;color:var(--red)}
+.icard-dots{display:flex;gap:8px}
+.icard-dots span{width:8px;height:8px;border-radius:50%;background:var(--red);opacity:.3;animation:dotBlink 2.5s infinite}
+.icard-dots span:nth-child(2){animation-delay:.4s}
+.icard-dots span:nth-child(3){animation-delay:.8s}
+@keyframes dotBlink{0%,100%{opacity:.3}50%{opacity:1;box-shadow:0 0 8px var(--red)}}
+
+.icard-name{
+  padding:36px 36px 28px;
+  font-family:'Kleptocracy',serif;font-size:clamp(1.3rem,3vw,2.2rem);line-height:1.15;
+  border-bottom:1px solid var(--border);color:var(--white);
+}
+.icard-name em{color:var(--red);font-style:normal}
+
+.icard-cols{display:grid;grid-template-columns:1fr 1fr 1fr}
+
+.icol{
+  padding:38px 36px;border-right:1px solid var(--border);
+  position:relative;overflow:hidden;
+  transition:background .4s;
+}
+.icol:last-child{border-right:none}
+.icol:hover{background:rgba(213,43,30,.04)}
+.icol-theory{
+  font-family:'Kleptocracy',serif;font-size:.55rem;letter-spacing:.35em;
+  color:var(--red);text-transform:uppercase;margin-bottom:8px;
+  display:flex;align-items:center;gap:8px;
+}
+.icol-theory::before{content:'▸';font-size:.5rem}
+.icol-q{
+  font-size:.88rem;font-weight:600;color:var(--offwhite);
+  margin-bottom:18px;line-height:1.45;padding-bottom:16px;
+  border-bottom:1px solid rgba(213,43,30,.15);
+}
+.icol-body{font-size:.84rem;line-height:1.9;color:var(--text-dim)}
+.icol-swipe{
+  position:absolute;bottom:0;left:0;width:0;height:2px;
+  background:var(--red);box-shadow:var(--glow-red);
+  transition:width .7s cubic-bezier(.16,1,.3,1);
+}
+.icol:hover .icol-swipe{width:100%}
+/* Corner brackets */
+.icard .c-tl,.icard .c-br{position:absolute;width:18px;height:18px}
+.icard .c-tl{top:-1px;left:-1px;border-top:2px solid var(--red);border-left:2px solid var(--red)}
+.icard .c-br{bottom:-1px;right:-1px;border-bottom:2px solid var(--red);border-right:2px solid var(--red)}
+
+/* ── THEORIES ── */
+#theories{padding:100px 60px;background:rgba(213,43,30,.025);border-top:1px solid var(--border)}
+.th-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-top:60px}
+.th-card{
+  background:var(--bg2);padding:50px 40px;
+  border:1px solid var(--border);
+  position:relative;overflow:hidden;cursor:default;
+  transition:transform .4s cubic-bezier(.16,1,.3,1),box-shadow .4s;
+}
+.th-card:hover{transform:translateY(-6px);box-shadow:0 20px 60px rgba(213,43,30,.2),var(--glow-red)}
+.th-num{
+  font-family:'Kleptocracy',serif;font-size:5rem;
+  color:transparent;-webkit-text-stroke:1px rgba(213,43,30,.2);
+  line-height:1;margin-bottom:18px;
+}
+.th-name{font-family:'Kleptocracy',serif;font-size:1rem;color:var(--red);letter-spacing:.1em;margin-bottom:8px;text-transform:uppercase}
+.th-use{font-size:.82rem;font-style:italic;color:var(--gold);margin-bottom:16px;line-height:1.5}
+.th-desc{font-size:.86rem;line-height:1.85;color:var(--text-dim)}
+.th-card::after{
+  content:'';position:absolute;top:0;right:0;width:0;height:3px;
+  background:var(--red);transition:width .5s ease;box-shadow:var(--glow-red);
+}
+.th-card:hover::after{width:100%}
+/* Maple leaf watermark */
+.th-leaf{position:absolute;bottom:-20px;right:-20px;width:100px;height:100px;opacity:.04;fill:var(--red)}
+
+/* ── CONSEILS ── */
+#conseils{padding:100px 60px;border-top:1px solid var(--border)}
+.con-grid{display:grid;grid-template-columns:1fr 1.6fr;gap:90px;margin-top:60px}
+.con-left .s-title{font-size:clamp(2rem,4vw,3.5rem);line-height:1.1}
+.con-left p{margin-top:24px;font-size:1rem;line-height:1.85;color:var(--text-dim);font-style:italic}
+.con-item{
+  display:flex;gap:28px;align-items:flex-start;
+  padding:30px 0;border-bottom:1px solid var(--border-white);
+  opacity:0;transform:translateX(-24px);
+  transition:opacity .7s ease,transform .7s ease;
+}
+.con-item.vis{opacity:1;transform:translateX(0)}
+.con-n{font-family:'Kleptocracy',serif;font-size:.65rem;color:var(--red);min-width:30px;padding-top:3px}
+.con-t{font-size:.9rem;line-height:1.75;color:var(--text-dim)}
+
+/* ── BIBLIOGRAPHIE ── */
+#biblio{padding:100px 60px;border-top:1px solid var(--border)}
+.bib-intro{font-size:1.05rem;line-height:1.85;color:var(--text-dim);max-width:600px;margin:20px 0 60px;font-style:italic}
+.bib-grid{columns:2;gap:50px}
+.bib-entry{
+  break-inside:avoid;margin-bottom:24px;
+  padding:18px 22px 18px 16px;
+  border-left:2px solid rgba(213,43,30,.25);
+  transition:border-color .3s,background .3s;
+}
+.bib-entry:hover{border-left-color:var(--red);background:rgba(213,43,30,.04)}
+.bib-src{font-family:'Kleptocracy',serif;font-size:.6rem;letter-spacing:.2em;color:var(--red);margin-bottom:6px;text-transform:uppercase}
+.bib-text{font-size:.8rem;line-height:1.7;color:var(--text-dim)}
+.bib-url{font-size:.68rem;color:rgba(213,43,30,.5);word-break:break-all;margin-top:5px}
+
+/* ── FOOTER ── */
+footer{
+  border-top:1px solid var(--border);
+  padding:50px 60px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:relative;z-index:3;
+}
+.ft-logo{font-family:'Kleptocracy',serif;font-size:1rem;color:var(--red);letter-spacing:.1em}
+.ft-mid{text-align:center}
+.ft-mid .ft-flag{display:flex;justify-content:center;margin-bottom:10px}
+.ft-mid .ff1,.ft-mid .ff3{width:16px;height:30px;background:var(--red)}
+.ft-mid .ff2{width:30px;height:30px;background:var(--white);display:flex;align-items:center;justify-content:center}
+.ft-mid .ff2 svg{width:18px;height:18px;fill:var(--red)}
+.ft-mid p{font-size:.7rem;letter-spacing:.18em;color:var(--text-dim);text-transform:uppercase}
+.ft-right{font-size:.75rem;color:var(--text-dim);letter-spacing:.12em;text-align:right}
+
+/* ── SCROLL BAR ── */
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--red);border-radius:2px}
+
+/* ── PROGRESS BAR ── */
+#progress{position:fixed;top:0;left:0;height:3px;background:var(--red);z-index:9999;box-shadow:var(--glow-red);width:0%;transition:width .1s linear}
+
+/* ── PARALLAX OVERLAY ── */
+.parallax-leaf{
+  position:absolute;pointer-events:none;opacity:.06;
+  fill:var(--red);animation:floatLeaf 8s ease-in-out infinite;
+}
+@keyframes floatLeaf{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-20px) rotate(8deg)}}
+
+/* ── CLIP REVEAL ── */
+.clip-reveal{
+  clip-path:inset(0 100% 0 0);
+  transition:clip-path .9s cubic-bezier(.16,1,.3,1);
+}
+.clip-reveal.vis{clip-path:inset(0 0% 0 0)}
+
+/* ── MOBILE ── */
+@media(max-width:900px){
+  nav{padding:14px 20px}
+  .nav-links{display:none}
+  #hero,#definition,#counters,#theories,#conseils,#biblio{padding-left:24px;padding-right:24px}
+  .icard{margin:0 20px 60px}
+  .inst-head{padding:0 20px 40px}
+  .icard-cols,.th-grid,.con-grid,.def-wrap{grid-template-columns:1fr}
+  .icol{border-right:none;border-bottom:1px solid var(--border)}
+  #counters{grid-template-columns:1fr 1fr}
+  .counter-item:nth-child(2){border-right:none}
+  .bib-grid{columns:1}
+  footer{flex-direction:column;gap:24px;text-align:center}
+  .ft-right{text-align:center}
+  .hero-stats{gap:30px}
+  .hero-maple-bg{width:300px;height:300px}
+}
+
+/* ── TEXT REVEAL CHARS ── */
+.char{display:inline-block;opacity:0;transform:translateY(20px);transition:opacity .5s,transform .5s}
+.char.show{opacity:1;transform:translateY(0)}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<canvas id="aurora-canvas"></canvas>
+<canvas id="leaf-canvas"></canvas>
+<div id="cur"></div>
+<div id="cur-r"></div>
+
+<!-- MAPLE LEAF SVG DEFS (reusable) -->
+<svg style="display:none">
+  <symbol id="maple" viewBox="0 0 100 100">
+    <path d="M50 5 L54 28 L77 16 L66 36 L90 38 L74 52 L82 75 L60 64 L55 90 L50 68 L45 90 L40 64 L18 75 L26 52 L10 38 L34 36 L23 16 L46 28 Z"/>
+  </symbol>
+</svg>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-brand">
+    <svg class="maple-icon" viewBox="0 0 100 100"><use href="#maple"/></svg>
+    Institutions Sociales
+  </div>
+  <ul class="nav-links">
+    <li><a href="#definition">Définition</a></li>
+    <li><a href="#institutions">Institutions</a></li>
+    <li><a href="#theories">Théories</a></li>
+    <li><a href="#conseils">Conseils</a></li>
+    <li><a href="#biblio">Bibliographie</a></li>
+  </ul>
+  <div class="nav-flag">
+    <div class="f1"></div>
+    <div class="f2"><svg viewBox="0 0 100 100"><use href="#maple"/></svg></div>
+    <div class="f3"></div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <svg class="hero-maple-bg" viewBox="0 0 100 100"><use href="#maple" fill="#D52B1E"/></svg>
+
+  <div class="hero-kicker">
+    <svg width="18" height="18" viewBox="0 0 100 100" fill="#D52B1E"><use href="#maple"/></svg>
+    Plan de travail — Sciences sociales
+  </div>
+
+  <h1 class="hero-h1">
+    <span class="sport">Sports</span>
+    <span class="canada">Canada</span>
+    <span class="institutions">Institutions</span>
+  </h1>
+
+  <div class="hero-divider"></div>
+
+  <p class="hero-sub">
+    Une analyse des institutions sportives canadiennes à travers le prisme des grandes théories sociales — fonctionnalisme, théorie du conflit et interactionnisme symbolique.
+  </p>
+
+  <div class="hero-tags">
+    <div class="htag"><span>Fonctionnalisme</span></div>
+    <div class="htag"><span>Théorie du Conflit</span></div>
+    <div class="htag"><span>Interactionnisme Symbolique</span></div>
+  </div>
+
+  <div class="hero-stats">
+    <div class="hstat">
+      <div class="c-num" data-target="24">0</div>
+      <div class="c-lbl">Coupes Stanley</div>
+    </div>
+    <div class="hstat">
+      <div class="c-num" data-target="14">0</div>
+      <div class="c-lbl">Médailles d'or</div>
+    </div>
+    <div class="hstat">
+      <div class="c-num" data-target="1909">0</div>
+      <div class="c-lbl">Année de fondation</div>
+    </div>
+    <div class="hstat">
+      <div class="c-num" data-target="3">0</div>
+      <div class="c-lbl">Institutions</div>
+    </div>
+  </div>
+
+  <div class="hero-scroll-hint">
+    <span class="scroll-line"></span>
+    Défiler pour explorer
+  </div>
+</section>
+
+<div class="flag-strip"></div>
+
+<!-- DÉFINITION -->
+<section id="definition">
+  <div class="def-wrap" style="max-width:1200px;margin:0 auto;padding:0 60px">
+    <div class="def-left">
+      <div class="s-label">Mise en contexte</div>
+      <div class="def-giant" data-anim="def">01</div>
+    </div>
+    <div class="def-right" data-observe>
+      <h2>Qu'est-ce qu'une institution sociale ?</h2>
+      <p>
+        Une institution sociale est une organisation publique qui sert l'intérêt du public et qui interagit avec la société. Ces institutions influencent la culture, les valeurs et le développement d'une société. Ce ne sont pas des entreprises privées uniquement motivées par le profit, mais plutôt des structures qui répondent aux besoins collectifs des citoyens et évoluent avec les changements sociaux.
+      </p>
+      <div class="theme-chip">
+        <svg viewBox="0 0 100 100"><use href="#maple"/></svg>
+        Thème général : Sports du Canada
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COUNTER STRIP -->
+<section id="counters">
+  <div class="counter-item" data-observe>
+    <span class="c-num counter" data-target="24">0</span>
+    <span class="c-lbl">Coupes Stanley</span>
+  </div>
+  <div class="counter-item" data-observe style="transition-delay:.1s">
+    <span class="c-num counter" data-target="1909">0</span>
+    <span class="c-lbl">Fondation des Canadiens</span>
+  </div>
+  <div class="counter-item" data-observe style="transition-delay:.2s">
+    <span class="c-num counter" data-target="14">0</span>
+    <span class="c-lbl">Médailles d'or Vancouver</span>
+  </div>
+  <div class="counter-item" data-observe style="transition-delay:.3s">
+    <span class="c-num counter" data-target="1976">0</span>
+    <span class="c-lbl">Jeux de Toronto (handicap)</span>
+  </div>
+</section>
+
+<!-- INSTITUTIONS -->
+<section id="institutions">
+  <div class="inst-head">
+    <div>
+      <div class="s-label">Analyse</div>
+      <h2 class="s-title">Institutions Sociales</h2>
+    </div>
+    <div class="inst-head-n">03</div>
+  </div>
+
+  <!-- CARD 1 -->
+  <div class="icard" data-observe>
+    <div class="c-tl"></div><div class="c-br"></div>
+    <div class="icard-glow"></div>
+    <div class="icard-bar">
+      <span class="icard-id">Institution // 01 — Fondée 1909</span>
+      <div class="icard-dots"><span></span><span></span><span></span></div>
+    </div>
+    <div class="icard-name">Les <em>Canadiens</em> de Montréal</div>
+    <div class="icard-cols">
+      <div class="icol">
+        <div class="icol-theory">Fonctionnalisme</div>
+        <div class="icol-q">Influence sur le développement de la société canadienne</div>
+        <div class="icol-body">Fondée en 1909 pour représenter la population francophone de Montréal, l'équipe a transcendé le simple sport pour devenir un symbole d'identité québécoise et canadienne. Avec 24 coupes Stanley, les Canadiens ont renforcé la fierté et l'unité dans la communauté. Du point de vue du fonctionnalisme, l'équipe remplit une fonction essentielle : unir les gens autour d'une cause commune et offrir une source de divertissement et d'engagement communautaire.</div>
+        <div class="icol-swipe"></div>
+      </div>
+      <div class="icol">
+        <div class="icol-theory">Théorie du Conflit</div>
+        <div class="icol-q">Contribution de la société canadienne à la transformation</div>
+        <div class="icol-body">La société canadienne a forcé l'équipe à évoluer, particulièrement après les années 1960–70 avec le multiculturalisme. Autrefois réservée aux joueurs québécois francophones, l'équipe a progressivement ouvert ses portes à des joueurs d'origines diverses. Le désir d'exclusivité multiculturelle a amené l'institution à s'adapter profondément.</div>
+        <div class="icol-swipe"></div>
+      </div>
+      <div class="icol">
+        <div class="icol-theory">Interactionnisme Symbolique</div>
+        <div class="icol-q">Ce qui s'est passé au cœur de l'institution</div>
+        <div class="icol-body">La rivalité historique avec les Maple Leafs de Toronto symbolisait autrefois le conflit linguistique canadien, mais l'équipe s'est transformée en symbole d'excellence et d'inclusivité. Le sens attaché aux Canadiens a évolué : de symbole purement francophone à symbole de compétence sportive et de pluralisme canadien, reflétant une vision plus inclusive de l'identité nationale.</div>
+        <div class="icol-swipe"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARD 2 -->
+  <div class="icard" data-observe style="transition-delay:.1s">
+    <div class="c-tl"></div><div class="c-br"></div>
+    <div class="icard-glow"></div>
+    <div class="icard-bar">
+      <span class="icard-id">Institution // 02 — Inclusivité sportive</span>
+      <div class="icard-dots"><span></span><span></span><span></span></div>
+    </div>
+    <div class="icard-name">Programmes de sports pour personnes<br>en situation de <em>handicap</em> au Canada</div>
+    <div class="icard-cols">
+      <div class="icol">
+        <div class="icol-theory">Fonctionnalisme</div>
+        <div class="icol-q">Influence sur le développement de la société canadienne</div>
+        <div class="icol-body">Après la Deuxième Guerre mondiale, des programmes sportifs adaptés ont émergé pour les vétérans et civils avec des blessures, promouvant l'inclusion et l'égalité des chances. Ces programmes servent une fonction cruciale en offrant aux personnes en situation de handicap une voie vers l'indépendance, la dignité et l'intégration sociale. Le comité paralympique canadien joue un rôle structurel central.</div>
+        <div class="icol-swipe"></div>
+      </div>
+      <div class="icol">
+        <div class="icol-theory">Théorie du Conflit</div>
+        <div class="icol-q">Contribution de la société canadienne à la transformation</div>
+        <div class="icol-body">Initialement limités aux personnes ayant des blessures à la moelle épinière, ces programmes se sont élargis pour inclure les athlètes amputés, aveugles et ceux ayant des incapacités intellectuelles. En 1993, le comité paralympique canadien a inclus pour la première fois des athlètes en situation de handicap aux Jeux du Canada. Les tensions entre exclusion et égalité ont créé un changement systématique.</div>
+        <div class="icol-swipe"></div>
+      </div>
+      <div class="icol">
+        <div class="icol-theory">Interactionnisme Symbolique</div>
+        <div class="icol-q">Ce qui s'est passé au cœur de l'institution</div>
+        <div class="icol-body">Les Jeux de Toronto en 1976 ont marqué un tournant en incluant pour la première fois des athlètes avec différents types de handicaps. Le sens du handicap a changé : autrefois vu comme une limitation absolue, il est devenu reconnu comme une caractéristique qui ne devrait pas empêcher l'excellence sportive, transformant la société canadienne tout entière.</div>
+        <div class="icol-swipe"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARD 3 -->
+  <div class="icard" data-observe style="transition-delay:.2s">
+    <div class="c-tl"></div><div class="c-br"></div>
+    <div class="icard-glow"></div>
+    <div class="icard-bar">
+      <span class="icard-id">Institution // 03 — Fondé 1909</span>
+      <div class="icard-dots"><span></span><span></span><span></span></div>
+    </div>
+    <div class="icard-name">Le <em>Comité Olympique</em> Canadien</div>
+    <div class="icard-cols">
+      <div class="icol">
+        <div class="icol-theory">Fonctionnalisme</div>
+        <div class="icol-q">Influence sur le développement de la société canadienne</div>
+        <div class="icol-body">Établi en 1909, le comité olympique canadien a façonné l'identité du Canada comme nation sportive en créant un système structuré pour identifier et soutenir les athlètes sur la scène mondiale. Il unit les Canadiens, développe l'infrastructure sportive nationale et projette l'image du Canada à l'international — notamment lors des 14 médailles d'or aux Jeux d'hiver de Vancouver en 2010.</div>
+        <div class="icol-swipe"></div>
+      </div>
+      <div class="icol">
+        <div class="icol-theory">Théorie du Conflit</div>
+        <div class="icol-q">Contribution de la société canadienne à la transformation</div>
+        <div class="icol-body">Après la performance décevante aux Jeux de Montréal en 1976, la société canadienne a exigé davantage de responsabilisation et de professionnalisme. Avant Vancouver 2010, le Canada a créé le programme « Own the Podium », reflétant une vision où la société voulait dominer, pas seulement participer. Les tensions entre anciennes méthodes et nouvelles exigences ont tout transformé.</div>
+        <div class="icol-swipe"></div>
+      </div>
+      <div class="icol">
+        <div class="icol-theory">Interactionnisme Symbolique</div>
+        <div class="icol-q">Ce qui s'est passé au cœur de l'institution</div>
+        <div class="icol-body">Le COC a évolué d'une organisation informelle à une institution hautement professionnelle et scientifique, reflétant l'évolution du Canada. Le sens attaché aux Jeux olympiques s'est transformé : autrefois un honneur de participer, c'est devenu une attente de domination. Vancouver 2010 a marqué le moment où le symbole olympique devint un reflet direct de l'ambition canadienne.</div>
+        <div class="icol-swipe"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="flag-strip"></div>
+
+<!-- THÉORIES -->
+<section id="theories">
+  <div style="max-width:1200px;margin:0 auto">
+    <div class="s-label">Cadre théorique</div>
+    <h2 class="s-title">Théories Sociales Utilisées</h2>
+    <div class="th-grid">
+      <div class="th-card" data-observe>
+        <div class="th-num">01</div>
+        <div class="th-name">Fonctionnalisme</div>
+        <div class="th-use">→ Influence sur la société canadienne</div>
+        <div class="th-desc">Montre le rôle structurel de l'institution : comment elle remplit une fonction essentielle dans la société en unissant les individus, en offrant des services collectifs et en maintenant l'ordre social. L'institution existe parce qu'elle répond à un besoin fondamental.</div>
+        <svg class="th-leaf" viewBox="0 0 100 100"><use href="#maple"/></svg>
+      </div>
+      <div class="th-card" data-observe style="transition-delay:.1s">
+        <div class="th-num">02</div>
+        <div class="th-name">Théorie du Conflit</div>
+        <div class="th-use">→ Contribution à la transformation</div>
+        <div class="th-desc">Explique les tensions et les changements sociaux. Les inégalités et les luttes de pouvoir entre groupes sont les moteurs de l'évolution des institutions. Elles s'adaptent sous pression sociale, souvent après des conflits entre groupes dominants et marginalisés.</div>
+        <svg class="th-leaf" viewBox="0 0 100 100"><use href="#maple"/></svg>
+      </div>
+      <div class="th-card" data-observe style="transition-delay:.2s">
+        <div class="th-num">03</div>
+        <div class="th-name">Interactionnisme Symbolique</div>
+        <div class="th-use">→ Au sein de l'institution</div>
+        <div class="th-desc">Explore le sens et l'identité au cœur de l'institution. Comment les symboles, les rituels et les interactions quotidiennes construisent la réalité sociale et façonnent l'identité collective d'une nation et de ses membres.</div>
+        <svg class="th-leaf" viewBox="0 0 100 100"><use href="#maple"/></svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONSEILS -->
+<section id="conseils">
+  <div style="max-width:1200px;margin:0 auto;padding:0 0px">
+    <div class="s-label">Méthodologie</div>
+    <div class="con-grid">
+      <div class="con-left">
+        <h2 class="s-title">Liste de Conseils pour Bien Utiliser les Ressources</h2>
+        <p>Maximisez l'efficacité de votre recherche grâce à ces pratiques éprouvées pour travailler avec des sources académiques et officielles.</p>
+        <svg style="width:80px;fill:var(--red);opacity:.15;margin-top:30px" viewBox="0 0 100 100"><use href="#maple"/></svg>
+      </div>
+      <div>
+        <div class="con-item" data-observe>
+          <div class="con-n">01.</div>
+          <div class="con-t">Documentez vos sources pour faciliter la rédaction de la bibliographie. Notez l'auteur, la date, le titre et l'URL dès le premier accès au document.</div>
+        </div>
+        <div class="con-item" data-observe style="transition-delay:.15s">
+          <div class="con-n">02.</div>
+          <div class="con-t">Consultez plusieurs perspectives — sources académiques et officielles — pour une meilleure compréhension de chaque institution. Évitez de vous limiter à une seule source.</div>
+        </div>
+        <div class="con-item" data-observe style="transition-delay:.3s">
+          <div class="con-n">03.</div>
+          <div class="con-t">Prenez des notes thématiques selon les trois sections pour chaque institution : influence, transformation et sens. Cela facilitera la rédaction et la cohérence de l'analyse finale.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BIBLIOGRAPHIE -->
+<section id="biblio">
+  <div style="max-width:1200px;margin:0 auto;padding:0">
+    <div class="s-label">Sources</div>
+    <h2 class="s-title">Bibliographie</h2>
+    <p class="bib-intro">Les sources suivantes ont été consultées pour la rédaction de ce travail. Les références sont présentées en ordre d'institution traitée.</p>
+    <div class="bib-grid">
+      <div class="bib-entry">
+        <div class="bib-src">Britannica</div>
+        <div class="bib-text">Britannica. (2026). <em>Montreal Canadiens.</em></div>
+        <div class="bib-url">https://www.britannica.com/topic/Montreal-Canadiens</div>
+      </div>
+      <div class="bib-entry">
+        <div class="bib-src">Cult MTL</div>
+        <div class="bib-text">Cult MTL. (2024). <em>Montreal Canadiens: A journey through time, triumphs, and traditions.</em></div>
+        <div class="bib-url">https://cultmtl.com/2024/05/montreal-canadiens-a-journey-through-time-triumphs-and-traditions/</div>
+      </div>
+      <div class="bib-entry">
+        <div class="bib-src">EBSCO Information Services</div>
+        <div class="bib-text">EBSCO Information Services. (s.d.). <em>Montreal Canadiens | Sports and leisure.</em></div>
+        <div class="bib-url">https://www.ebsco.com/research-starters/sports-and-leisure/montreal-canadiens</div>
+      </div>
+      <div class="bib-entry">
+        <div class="bib-src">Comité Paralympique Canadien</div>
+        <div class="bib-text">Canadian Paralympic Committee. (2024). <em>History of the Paralympic Movement in Canada.</em></div>
+        <div class="bib-url">https://paralympic.ca/</div>
+      </div>
+      <div class="bib-entry">
+        <div class="bib-src">Heritage Matters</div>
+        <div class="bib-text">Heritage Matters. (s.d.). <em>Disability in sport.</em></div>
+        <div class="bib-url">https://www.heritagetrust.on.ca/heritagematters/articles/disability-in-sport</div>
+      </div>
+      <div class="bib-entry">
+        <div class="bib-src">SIRC</div>
+        <div class="bib-text">Sport Information Resource Centre (SIRC). (2025). <em>The history of Para sport in Canada.</em></div>
+        <div class="bib-url">https://sirc.ca/articles/the-history-of-para-sport-in-canada/</div>
+      </div>
+      <div class="bib-entry">
+        <div class="bib-src">L'Encyclopédie Canadienne</div>
+        <div class="bib-text">The Canadian Encyclopedia. (s.d.). <em>Canada at the Paralympic Games.</em></div>
+        <div class="bib-url">https://thecanadianencyclopedia.ca/fr/article/les-jeux-paralympiques</div>
+      </div>
+      <div class="bib-entry">
+        <div class="bib-src">Comité Olympique Canadien</div>
+        <div class="bib-text">Canadian Olympic Committee. (2024). <em>About us.</em></div>
+        <div class="bib-url">https://olympic.ca/canadian-olympic-committee/</div>
+      </div>
+      <div class="bib-entry">
+        <div class="bib-src">L'Encyclopédie Canadienne</div>
+        <div class="bib-text">The Canadian Encyclopedia. (s.d.). <em>Canadian Olympic Committee.</em></div>
+        <div class="bib-url">https://www.thecanadianencyclopedia.ca/en/article/canadian-olympic-committee</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="ft-logo">Institutions Sociales // CA</div>
+  <div class="ft-mid">
+    <div class="ft-flag">
+      <div class="ff1"></div>
+      <div class="ff2"><svg viewBox="0 0 100 100"><use href="#maple"/></svg></div>
+      <div class="ff3"></div>
+    </div>
+    <p>Jackson &amp; Caelan — Sommatif 3</p>
+  </div>
+  <div class="ft-right">Sports du Canada<br>Sciences Sociales</div>
+</footer>
+
+<script>
+/* ─────────── CURSOR ─────────── */
+const cur=document.getElementById('cur'),curR=document.getElementById('cur-r');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cur.style.left=mx+'px';cur.style.top=my+'px'});
+(function ring(){rx+=(mx-rx)*.1;ry+=(my-ry)*.1;curR.style.left=rx+'px';curR.style.top=ry+'px';requestAnimationFrame(ring)})();
+
+/* ─────────── PROGRESS BAR ─────────── */
+const prog=document.getElementById('progress');
+window.addEventListener('scroll',()=>{
+  const pct=window.scrollY/(document.body.scrollHeight-window.innerHeight)*100;
+  prog.style.width=pct+'%';
+});
+
+/* ─────────── AURORA CANVAS ─────────── */
+(function(){
+  const cv=document.getElementById('aurora-canvas'),ctx=cv.getContext('2d');
+  let W,H;
+  function sz(){W=cv.width=window.innerWidth;H=cv.height=window.innerHeight}sz();
+  window.addEventListener('resize',sz);
+  let t=0;
+  const waves=[
+    {y:.35,amp:80,freq:.004,speed:.4,alpha:.18,color:'#D52B1E'},
+    {y:.42,amp:60,freq:.006,speed:.6,alpha:.12,color:'#8B0000'},
+    {y:.28,amp:100,freq:.003,speed:.3,alpha:.1,color:'#FF1A0E'},
+    {y:.5,amp:50,freq:.008,speed:.8,alpha:.08,color:'#ffffff'},
+    {y:.2,amp:70,freq:.005,speed:.5,alpha:.07,color:'#C8973E'},
+  ];
+  // Pre-parse hex colors into rgba strings once
+  function hexToRgba(hex, alpha) {
+    const r = parseInt(hex.slice(1,3),16);
+    const g = parseInt(hex.slice(3,5),16);
+    const b = parseInt(hex.slice(5,7),16);
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    waves.forEach(w=>{
+      ctx.beginPath();
+      ctx.moveTo(0,H);
+      for(let x=0;x<=W;x+=4){
+        const y=w.y*H+Math.sin(x*w.freq+t*w.speed)*w.amp+Math.cos(x*w.freq*.7+t*w.speed*.8)*w.amp*.4;
+        x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+      }
+      ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();
+      ctx.save();
+      ctx.globalAlpha=w.alpha;
+      ctx.fillStyle=w.color;
+      ctx.fill();
+      ctx.restore();
+    });
+    // Dark vignette on top
+    const vg=ctx.createRadialGradient(W/2,H/2,H*.1,W/2,H/2,H*.9);
+    vg.addColorStop(0,'rgba(13,13,20,0)');
+    vg.addColorStop(1,'rgba(6,6,10,0.95)');
+    ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
+    t+=.012;requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* ─────────── MAPLE LEAF PARTICLES ─────────── */
+(function(){
+  const cv=document.getElementById('leaf-canvas'),ctx=cv.getContext('2d');
+  let W,H;
+  function sz(){W=cv.width=window.innerWidth;H=cv.height=window.innerHeight}sz();
+  window.addEventListener('resize',sz);
+
+  // Draw maple leaf as path
+  function mapleLeaf(ctx,cx,cy,size,rot){
+    ctx.save();ctx.translate(cx,cy);ctx.rotate(rot);ctx.scale(size,size);
+    ctx.beginPath();
+    // Simplified maple path scaled to unit space
+    const pts=[[0,-1],[.18,-.45],[.65,-.55],[.35,-.05],[.95,.12],[.55,.28],[.45,.65],[.18,.45],[0,.9],[-.18,.45],[-.45,.65],[-.55,.28],[-.95,.12],[-.35,-.05],[-.65,-.55],[-.18,-.45],[0,-1]];
+    pts.forEach((p,i)=>i===0?ctx.moveTo(p[0]*50,p[1]*50):ctx.lineTo(p[0]*50,p[1]*50));
+    ctx.closePath();ctx.restore();
+  }
+
+  const LEAVES=22;
+  const leaves=Array.from({length:LEAVES},()=>({
+    x:Math.random()*window.innerWidth,
+    y:Math.random()*-window.innerHeight,
+    size:.2+Math.random()*.5,
+    rot:Math.random()*Math.PI*2,
+    rotV:(Math.random()-.5)*.02,
+    vy:.4+Math.random()*1.2,
+    vx:(Math.random()-.5)*.6,
+    alpha:.06+Math.random()*.1,
+    swing:Math.random()*Math.PI*2,
+    swingS:.01+Math.random()*.02,
+  }));
+
+  function drawFrame(){
+    ctx.clearRect(0,0,W,H);
+    leaves.forEach(l=>{
+      l.swing+=l.swingS;
+      l.x+=l.vx+Math.sin(l.swing)*.4;
+      l.y+=l.vy;
+      l.rot+=l.rotV;
+      if(l.y>H+100){l.y=-100;l.x=Math.random()*W}
+      if(l.x<-100)l.x=W+100;
+      if(l.x>W+100)l.x=-100;
+      ctx.save();ctx.globalAlpha=l.alpha;
+      ctx.fillStyle='#D52B1E';
+      mapleLeaf(ctx,l.x,l.y,l.size,l.rot);
+      ctx.fill();ctx.restore();
+    });
+    requestAnimationFrame(drawFrame);
+  }
+  drawFrame();
+})();
+
+/* ─────────── HERO COUNTER ANIMATION ─────────── */
+function animCount(el,target,dur=1800){
+  const start=performance.now();
+  function step(now){
+    const p=Math.min((now-start)/dur,1);
+    const ease=1-Math.pow(1-p,4);
+    el.textContent=Math.round(ease*target);
+    if(p<1)requestAnimationFrame(step);
+    else el.textContent=target;
+  }
+  requestAnimationFrame(step);
+}
+// Hero stats
+setTimeout(()=>{
+  document.querySelectorAll('.hstat .c-num[data-target]').forEach(el=>{
+    animCount(el,+el.dataset.target,2000);
+  });
+},1200);
+
+/* ─────────── INTERSECTION OBSERVER ─────────── */
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(!e.isIntersecting)return;
+    e.target.classList.add('vis');
+    // Counter in strip
+    if(e.target.classList.contains('counter-item')){
+      const c=e.target.querySelector('.counter');
+      if(c&&!c.dataset.done){c.dataset.done=1;animCount(c,+c.dataset.target,1600)}
+    }
+    obs.unobserve(e.target);
+  });
+},{threshold:.12});
+
+document.querySelectorAll('[data-observe]').forEach(el=>obs.observe(el));
+// Also observe counter items
+document.querySelectorAll('.counter-item').forEach(el=>obs.observe(el));
+
+/* ─────────── PARALLAX HERO ─────────── */
+window.addEventListener('scroll',()=>{
+  const y=window.scrollY;
+  const bg=document.querySelector('.hero-maple-bg');
+  if(bg)bg.style.transform=`translateY(calc(-50% + ${y*.15}px)) rotate(${y*.02}deg)`;
+});
+
+/* ─────────── TILT ON CARDS ─────────── */
+document.querySelectorAll('.icard').forEach(card=>{
+  card.addEventListener('mousemove',e=>{
+    const r=card.getBoundingClientRect();
+    const x=(e.clientX-r.left)/r.width-.5;
+    const y=(e.clientY-r.top)/r.height-.5;
+    card.style.transform=`perspective(1200px) rotateX(${-y*3}deg) rotateY(${x*3}deg) scale(1.01)`;
+  });
+  card.addEventListener('mouseleave',()=>{
+    card.style.transform='perspective(1200px) rotateX(0) rotateY(0) scale(1)';
+    card.style.transition='transform .6s ease';
+  });
+  card.addEventListener('mouseenter',()=>{card.style.transition='transform .1s'});
+});
+
+/* ─────────── GLITCH TEXT on HERO H1 ─────────── */
+const h1 = document.querySelector('.hero-h1');
+if(h1){
+  setInterval(()=>{
+    if(Math.random()<.07){
+      h1.style.textShadow=`${(Math.random()-.5)*8}px 0 #FF0000, ${(Math.random()-.5)*8}px 0 #ffffff`;
+      h1.style.transform=`skewX(${(Math.random()-.5)*4}deg)`;
+      setTimeout(()=>{h1.style.textShadow='';h1.style.transform='';},80);
+    }
+  },600);
+}
+
+/* ─────────── THEORY CARDS STAGGER ─────────── */
+const thObs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.style.opacity='1';
+      e.target.style.transform='translateY(0)';
+      thObs.unobserve(e.target);
+    }
+  });
+},{threshold:.1});
+document.querySelectorAll('.th-card').forEach((c,i)=>{
+  c.style.opacity='0';
+  c.style.transform='translateY(40px)';
+  c.style.transition=`opacity .8s ${i*.12}s ease, transform .8s ${i*.12}s cubic-bezier(.16,1,.3,1), box-shadow .4s`;
+  thObs.observe(c);
+});
+
+/* ─────────── MAGNETIC BUTTONS ─────────── */
+document.querySelectorAll('.htag').forEach(btn=>{
+  btn.addEventListener('mousemove',e=>{
+    const r=btn.getBoundingClientRect();
+    const x=(e.clientX-r.left-r.width/2)*.3;
+    const y=(e.clientY-r.top-r.height/2)*.3;
+    btn.style.transform=`translate(${x}px,${y}px)`;
+  });
+  btn.addEventListener('mouseleave',()=>{btn.style.transform='';});
+});
+
+/* ─────────── TYPING EFFECT ON SUBTITLE ─────────── */
+const sub=document.querySelector('.hero-sub');
+if(sub){
+  const txt=sub.textContent;sub.textContent='';
+  let i=0;
+  setTimeout(()=>{
+    const iv=setInterval(()=>{
+      sub.textContent+=txt[i++];
+      if(i>=txt.length)clearInterval(iv);
+    },18);
+  },1100);
+}
+
+/* ─────────── NAV ACTIVE HIGHLIGHT ─────────── */
+const sections=document.querySelectorAll('section[id]');
+const navAs=document.querySelectorAll('.nav-links a');
+window.addEventListener('scroll',()=>{
+  let cur2='';
+  sections.forEach(s=>{if(s.offsetTop-200<=window.scrollY)cur2=s.id});
+  navAs.forEach(a=>{
+    a.style.color=a.getAttribute('href')==='#'+cur2?'var(--white)':'';
+  });
+},{passive:true});
+</script>
+</body>
+</html>
